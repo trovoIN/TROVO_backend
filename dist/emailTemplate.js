@@ -31,7 +31,19 @@ export const welcomeEmailTemplate = () => {
               <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                 <tr>
                   <td style="padding-right: 12px;">
-                    <img src="https://trovofi.in/trovo.svg" alt="trovofi" width="28" height="28" style="display: block; width: 28px; height: 28px;" />
+                    <!-- Using PNG instead of SVG for email compatibility -->
+                    <div style="
+                      width: 28px;
+                      height: 28px;
+                      background: linear-gradient(135deg, #61dca3 0%, #4bc58f 100%);
+                      border-radius: 6px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-weight: 700;
+                      font-size: 16px;
+                      color: #0b0b0b;
+                    ">T</div>
                   </td>
                   <td style="vertical-align: middle;">
                     <span style="
@@ -128,7 +140,19 @@ export const confirmationEmailTemplate = (data) => {
               <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                 <tr>
                   <td style="padding-right: 12px;">
-                    <img src="https://trovofi.in/trovo.svg" alt="trovofi" width="28" height="28" style="display: block; width: 28px; height: 28px;" />
+                    <!-- Using CSS instead of SVG for email compatibility -->
+                    <div style="
+                      width: 28px;
+                      height: 28px;
+                      background: linear-gradient(135deg, #61dca3 0%, #4bc58f 100%);
+                      border-radius: 6px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-weight: 700;
+                      font-size: 16px;
+                      color: #0b0b0b;
+                    ">T</div>
                   </td>
                   <td style="vertical-align: middle;">
                     <span style="
