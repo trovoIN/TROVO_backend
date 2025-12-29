@@ -15,13 +15,22 @@ router.post('/early-access', async (req, res) => {
         return res.status(400).json({ error: 'Invalid email' });
     }
     const { email } = parse.data;
+    const TEST_EMAIL = 'saividith396@gmail.com';
+    const isDev = process.env.NODE_ENV !== 'production';
+    const isTestEmail = email === TEST_EMAIL;
     try {
-        // Dedupe but allow resend if not yet sent
-        const existing = await db.collection('early_access_emails').where('email', '==', email).limit(1).get();
-        let docRef = existing.empty ? undefined : existing.docs[0].ref;
-        const prevStatus = existing.empty ? undefined : existing.docs[0].get('status');
-        if (prevStatus === 'sent') {
-            return res.status(200).json({ ok: true, duplicate: true });
+        // In dev mode, test email can submit multiple times without duplicate check
+        const shouldCheckDuplicate = !(isDev && isTestEmail);
+        let docRef;
+        let prevStatus;
+        if (shouldCheckDuplicate) {
+            // Dedupe but allow resend if not yet sent
+            const existing = await db.collection('early_access_emails').where('email', '==', email).limit(1).get();
+            docRef = existing.empty ? undefined : existing.docs[0].ref;
+            prevStatus = existing.empty ? undefined : existing.docs[0].get('status');
+            if (prevStatus === 'sent') {
+                return res.status(200).json({ ok: true, duplicate: true });
+            }
         }
         if (!docRef) {
             docRef = await db.collection('early_access_emails').add({
@@ -29,6 +38,7 @@ router.post('/early-access', async (req, res) => {
                 createdAt: FieldValue.serverTimestamp(),
                 source: 'backend-api',
                 status: 'pending',
+                isTestEmail: isTestEmail,
             });
         }
         else {
@@ -40,16 +50,17 @@ router.post('/early-access', async (req, res) => {
         try {
             await sendWelcomeEmail(email);
             await docRef.update({ status: 'sent', sentAt: FieldValue.serverTimestamp() });
+            logger.info({ email, isTestEmail, isDev }, 'welcome email sent successfully');
         }
         catch (mailErr) {
-            logger.error({ err: mailErr }, 'email send failed');
+            logger.error({ err: mailErr, email }, 'email send failed');
             await docRef.update({ status: 'failed', error: mailErr?.message || 'send failed', lastErrorAt: FieldValue.serverTimestamp() });
             return res.status(502).json({ error: 'Email send failed' });
         }
         return res.status(200).json({ ok: true });
     }
     catch (err) {
-        logger.error({ err }, 'failed to save early access email');
+        logger.error({ err, email }, 'failed to save early access email');
         return res.status(500).json({ error: 'Server error' });
     }
 });

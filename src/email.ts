@@ -26,7 +26,14 @@ export const sendWelcomeEmail = async (to: string) => {
       headers: {
         'X-Priority': '3',
         'X-Mailer': 'Trovo-Backend',
+        'X-Entity-Ref-ID': `trovo-${Date.now()}`,
+        'List-Unsubscribe': '<mailto:hello@trovofi.in?subject=unsubscribe>',
+        'Precedence': 'bulk',
+        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN',
       },
+      // Important: These help with deliverability
+      replyTo: 'hello@trovofi.in',
+      messageId: `<${Date.now()}.${to.replace('@', '.')}@trovofi.in>`,
     })
 
     logger.info({ email: to, messageId: info.messageId }, 'welcome email sent successfully')
