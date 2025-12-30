@@ -17,6 +17,7 @@
     "deploy:render": "git push render main"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.19.2",
@@ -24,7 +25,6 @@
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.2",
     "helmet": "^7.2.0",
-    "nodemailer": "^7.0.11",
     "pino": "^9.5.0",
     "zod": "^3.23.8"
   },

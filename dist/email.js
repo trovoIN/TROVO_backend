@@ -1,60 +1,60 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import { config } from './config.js';
 import { logger } from './logger.js';
 import { welcomeEmailTemplate, confirmationEmailTemplate } from './emailTemplate.js';
-const transporter = nodemailer.createTransport({
-    host: 'smtp.sendgrid.net',
-    port: 587,
-    secure: false,
-    auth: {
-        user: 'apikey',
-        pass: config.sendgrid.apiKey,
-    },
-});
+// Initialize SendGrid with API key
+sgMail.setApiKey(config.sendgrid.apiKey);
 export const sendWelcomeEmail = async (to) => {
     try {
         const template = welcomeEmailTemplate();
-        const info = await transporter.sendMail({
-            from: config.sendgrid.from,
+        const msg = {
             to,
+            from: config.sendgrid.from,
             subject: template.subject,
-            html: template.html,
             text: template.text,
-            headers: {
-                'X-Priority': '3',
-                'X-Mailer': 'Trovo-Backend',
-                'X-Entity-Ref-ID': `trovo-${Date.now()}`,
-                'List-Unsubscribe': '<mailto:hello@trovofi.in?subject=unsubscribe>',
-                'Precedence': 'bulk',
-                'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN',
-            },
-            // Important: These help with deliverability
-            replyTo: 'hello@trovofi.in',
-            messageId: `<${Date.now()}.${to.replace('@', '.')}@trovofi.in>`,
-        });
-        logger.info({ email: to, messageId: info.messageId }, 'welcome email sent successfully');
-        return { success: true, messageId: info.messageId };
+            html: template.html,
+        };
+        const [response] = await sgMail.send(msg);
+        logger.info({
+            email: to,
+            messageId: response.headers['x-message-id'],
+            statusCode: response.statusCode
+        }, 'welcome email sent successfully');
+        return { success: true, messageId: response.headers['x-message-id'] };
     }
     catch (error) {
-        logger.error({ email: to, err: error }, 'failed to send welcome email');
+        logger.error({
+            email: to,
+            err: error,
+            response: error.response?.body
+        }, 'failed to send welcome email');
         throw error;
     }
 };
 export const sendConfirmationEmail = async (to) => {
     try {
         const template = confirmationEmailTemplate({ email: to });
-        const info = await transporter.sendMail({
-            from: config.sendgrid.from,
+        const msg = {
             to,
+            from: config.sendgrid.from,
             subject: template.subject,
-            html: template.html,
             text: template.text,
-        });
-        logger.info({ email: to, messageId: info.messageId }, 'confirmation email sent');
-        return { success: true, messageId: info.messageId };
+            html: template.html,
+        };
+        const [response] = await sgMail.send(msg);
+        logger.info({
+            email: to,
+            messageId: response.headers['x-message-id'],
+            statusCode: response.statusCode
+        }, 'confirmation email sent');
+        return { success: true, messageId: response.headers['x-message-id'] };
     }
     catch (error) {
-        logger.error({ email: to, err: error }, 'failed to send confirmation email');
+        logger.error({
+            email: to,
+            err: error,
+            response: error.response?.body
+        }, 'failed to send confirmation email');
         throw error;
     }
 };
