@@ -50,7 +50,7 @@ router.post('/early-access', async (req, res) => {
         try {
             await sendWelcomeEmail(email);
             await docRef.update({ status: 'sent', sentAt: FieldValue.serverTimestamp() });
-            logger.info({ email, isTestEmail, isDev }, 'welcome email sent successfully');
+            logger.info({ email, isTestEmail, isDev, resent: !!prevStatus }, 'welcome email sent successfully');
         }
         catch (mailErr) {
             logger.error({ err: mailErr, email }, 'email send failed');
